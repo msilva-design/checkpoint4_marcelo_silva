@@ -1,0 +1,565 @@
+{
+  "name": "Worker 1 - Nivel_Grav_Alta",
+  "nodes": [
+    {
+      "parameters": {
+        "sendTo": "msil1972@proton.me",
+        "subject": "🚨 DERIVACIÓN URGENTE — {{ $('When Executed by Another Workflow').item.json.triage.sintoma_principal }}",
+        "message": "=<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto\"><div style=\"background:#c0392b;padding:16px;border-radius:8px 8px 0 0\"><h2 style=\"color:white;margin:0\">🚨 SOLICITUD DE DERIVACIÓN URGENTE</h2></div><div style=\"background:#f9f9f9;padding:24px;border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px\"><p><strong>Síntoma principal:</strong><br>{{ $json.triage.sintoma_principal }}</p><p><strong>Nivel de gravedad:</strong> <span style=\"color:#c0392b;font-weight:bold\">{{ $json.triage.nivel_gravedad }}</span></p><p>Por favor tomá una decisión:</p><a href=\"{{ $execution.resumeUrl + '&decision=aprobado' }}\" style=\"display:inline-block;background:#27ae60;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;margin-right:12px\">✅ APROBAR DERIVACIÓN</a><a href=\"{{ $execution.resumeUrl + '&decision=rechazado' }}\" style=\"display:inline-block;background:#e74c3c;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold\">❌ RECHAZAR DERIVACIÓN</a><p style=\"margin:24px 0 0;color:#888;font-size:12px\">⚠️ Este enlace es de un solo uso.</p></div></div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -736,
+        0
+      ],
+      "id": "1378cf60-9ace-496d-903a-fcd371b2f6dd",
+      "name": "Send a message",
+      "webhookId": "cda466f3-9152-4e9e-8bf6-bb0d337e861b",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.decision }}",
+                    "rightValue": "aprobado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "cc59ea77-ca8a-4a22-b4c2-28dd8fdfce92"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "aprobado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "86fefaa6-d238-4295-a26e-3dc2f23aac88",
+                    "leftValue": "={{ $json.query.decision }}",
+                    "rightValue": "rechazado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "rechazado"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        -16
+      ],
+      "id": "08e6d58d-0477-483d-8740-4f14eb59af62",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "90c9094a-3129-44b5-ac05-23dea9d46941",
+              "name": "decision",
+              "value": "Escalado",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        192
+      ],
+      "id": "ac7cf15b-d8c4-4a37-a23c-24260810cc24",
+      "name": "Set-Escalamiento"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -928,
+        0
+      ],
+      "id": "06fec89d-7949-4a17-9832-6f38fdfc1bf7",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "24cd4cf1-525a-46a5-bedd-ad11f203dd20",
+              "name": "decision",
+              "value": "Aprobado",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        -192
+      ],
+      "id": "bba2430e-ca23-4dd8-a493-728d0fce65eb",
+      "name": "Set-Aprobado"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "650f2f38-2f60-4775-aa7a-99a85956726b",
+              "name": "decision",
+              "value": "Rechazado",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        0
+      ],
+      "id": "d5219281-9803-43bb-b2e5-ddb923a85100",
+      "name": "Set-Rechazado"
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "responseMode": "lastNode",
+        "limitWaitTime": true,
+        "resumeAmount": 15,
+        "resumeUnit": "minutes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        0
+      ],
+      "id": "35808a70-9955-496f-9643-074d8b4bc3aa",
+      "name": "Esperar 15 minutos",
+      "webhookId": "87e031c6-0f9e-4ff2-8e5e-7a78def7815c"
+    },
+    {
+      "parameters": {
+        "content": "##Derivación a Responsable de Area medica para evaluación",
+        "height": 240,
+        "width": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        -80
+      ],
+      "id": "02fc7682-7552-42f1-8e3d-8e055cf79c51",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "##Switch de derivación según Evaluación Responsable de Area",
+        "height": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -80
+      ],
+      "id": "77adc4ed-4ddc-4950-af9a-ff62013ab91d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1htHCJdH9NfsEdglfQFRGv1PdeFkTsYTWa0Vk0GCo2Cs",
+          "mode": "list",
+          "cachedResultName": "Regitro de Consultas Nivel_Grav",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1htHCJdH9NfsEdglfQFRGv1PdeFkTsYTWa0Vk0GCo2Cs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17dcEHmNfBB_UTWtfC09ONgABtShjFrwr3hQyFTKUNaY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "fecha_evaluacion": "={{ $('When Executed by Another Workflow').item.json.triage.fecha_evaluacion }}",
+            "sintoma_principal": "={{ $('When Executed by Another Workflow').item.json.triage.sintoma_principal }}",
+            "id_paciente": "={{ $('When Executed by Another Workflow').item.json.triage.id_paciente }}",
+            "nombre ": "={{ $('When Executed by Another Workflow').item.json.triage.nombre }}",
+            "apellido": "={{ $('When Executed by Another Workflow').item.json.triage.apellido }}",
+            "nivel_gravedad": "={{ $('When Executed by Another Workflow').item.json.triage.nivel_gravedad }}",
+            "requiere_medico": "={{ $('When Executed by Another Workflow').item.json.triage.requiere_medico }}",
+            "decision": "={{ $json.decision }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "fecha_evaluacion",
+              "displayName": "fecha_evaluacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id_paciente",
+              "displayName": "id_paciente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nombre ",
+              "displayName": "nombre ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "apellido",
+              "displayName": "apellido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sintoma_principal",
+              "displayName": "sintoma_principal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nivel_gravedad",
+              "displayName": "nivel_gravedad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "requiere_medico",
+              "displayName": "requiere_medico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "decision",
+              "displayName": "decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        240,
+        0
+      ],
+      "id": "db0851de-25b5-4c7a-b85d-c43029b39447",
+      "name": "Registrar caso Alta Logs Auditoría",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da10a130-cf7d-4cae-bdbe-59bfabc398ed",
+              "name": "slack_sintoma",
+              "value": "={{ $json.triage.sintoma_principal }}",
+              "type": "string"
+            },
+            {
+              "id": "cb3a9856-b06e-4042-b83a-88faa4f27d26",
+              "name": "slack_nivel",
+              "value": "={{ $json.triage.nivel_gravedad }}",
+              "type": "string"
+            },
+            {
+              "id": "2df01218-552b-4909-b3eb-4f85aed2c6c0",
+              "name": "slack_paciente",
+              "value": "={{ $json.triage.nombre }} {{ $json.triage.apellido }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -736,
+        240
+      ],
+      "id": "10f55d0e-1650-4abb-8917-1a2cbcb05df8",
+      "name": "Set - Limpiar payload para Slack"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BS6EKBWGH",
+          "mode": "id"
+        },
+        "text": "=🚨 Caso {{ $json.slack_nivel }} — {{ $json.slack_paciente }}\nSíntoma: {{ $json.slack_sintoma }}\nRevisar mail para aprobar/rechazar derivación.\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        -528,
+        240
+      ],
+      "id": "78fb651b-b481-422c-9da2-520d5bc79e80",
+      "name": "Send a message1",
+      "webhookId": "8eca61af-1972-4cc3-bca8-78885825c688",
+      "credentials": {
+        "slackApi": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "##Notificación a Slack de nombre , síntoma de paciente y Nivel Gravedad ",
+        "height": 224,
+        "width": 224,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        176
+      ],
+      "id": "003deaeb-ce13-42fe-88bd-300f9e902781",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Esperar 15 minutos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Set-Aprobado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set-Rechazado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set-Escalamiento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set-Escalamiento": {
+      "main": [
+        [
+          {
+            "node": "Registrar caso Alta Logs Auditoría",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set - Limpiar payload para Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set-Rechazado": {
+      "main": [
+        [
+          {
+            "node": "Registrar caso Alta Logs Auditoría",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set-Aprobado": {
+      "main": [
+        [
+          {
+            "node": "Registrar caso Alta Logs Auditoría",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar 15 minutos": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar caso Alta Logs Auditoría": {
+      "main": [
+        []
+      ]
+    },
+    "Set - Limpiar payload para Slack": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "25e10f44-b1e3-4630-b916-664e199124e1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1a0664170c7761d9a55d4e44775146c5240c5c6d974733b52e2fa6a8906839d7"
+  },
+  "id": "es7KAQbRJgXAohgs",
+  "tags": []
+}

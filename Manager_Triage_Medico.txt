@@ -1,0 +1,614 @@
+{
+  "name": "Manager_Triage_Medico",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Eres un sistema de triage médico. Analiza el siguiente mensaje del paciente: \"{{ $json.chatInput }}\".\n\nTu única tarea es extraer la información y responder ESTRICTAMENTE en formato JSON, sin texto adicional, usando esta estructura:\n\n{\n\"fecha_evaluacion\": \"Fecha actual en formato ISO 8601 (ej. YYYY-MM-DDTHH:mm:ss)\",\n\"id_paciente\": \"ID del paciente si aparece mencionado en el mensaje, o null si no aparece\",\n  \"nombre\": \"nombre del paciente si aparece mencionado, o null si no aparece\",\n  \"apellido\": \"apellido del paciente si aparece mencionado, o null si no aparece\",\n  \"sintoma_principal\": \"descripción breve\",\n  \"nivel_gravedad\": \"ALTA\", \"MEDIA\" o \"BAJA\",\n  \"requiere_medico\": true o false\n}\n\nCriterios de clasificación:\n- ALTA: dolor torácico, dificultad para respirar, pérdida de conciencia, sangrado abundante, síntomas de accidente cerebrovascular, o cualquier combinación de síntomas que sugiera riesgo de vida.\n- MEDIA: síntomas significativos pero sin señales de riesgo inmediato de vida.\n- BAJA: síntomas leves, estables, sin señales de alarma.\n\nReglas importantes:\n- Ante la duda entre dos niveles, elegí siempre el más grave.\n- No inventes datos. Si el ID, nombre o apellido no están explícitamente en el mensaje, usa null.\n- Responde solo con el objeto JSON, sin explicaciones ni texto adicional."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -2256,
+        -48
+      ],
+      "id": "9716f4cd-4e8e-4530-b8de-690f4f1ec3a9",
+      "name": "Basic LLM Chain",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -2256,
+        128
+      ],
+      "id": "636cde6e-4368-48ac-aba8-bddc2de28b5b",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  let respuestaIA = item.json.output || item.json.text || \"\";\n  respuestaIA = respuestaIA.replace(/```json/gi, '').replace(/```/gi, '').trim();\n\n  const inicioJson = respuestaIA.indexOf('{');\n  const finJson = respuestaIA.lastIndexOf('}');\n  if (inicioJson !== -1 && finJson !== -1) {\n    respuestaIA = respuestaIA.substring(inicioJson, finJson + 1);\n  }\n\n  try {\n    let datosParseados = JSON.parse(respuestaIA);\n\n    datosParseados.id_paciente = datosParseados.id_paciente || null;\n    datosParseados.nombre = datosParseados.nombre || null;\n    datosParseados.apellido = datosParseados.apellido || null;\n\n    // Mensaje original tomado directo del input, no de la IA\n    datosParseados.mensaje_original = item.json.chatInput || \"\";\n\n    item.json.triage = datosParseados;\n\n  } catch (error) {\n    item.json.triage = {\n      \"id_paciente\": null,\n      \"nombre\": null,\n      \"apellido\": null,\n      \"mensaje_original\": item.json.chatInput || \"\",\n      \"sintoma_principal\": \"Error de procesamiento de IA. Requiere lectura manual.\",\n      \"nivel_gravedad\": \"ALTA\",\n      \"requiere_medico\": true\n    };\n    item.json.error_tecnico = error.message;\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        -48
+      ],
+      "id": "4d5daafc-c95d-4dbc-a72d-0c8ad5a6ade7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.triage.nivel_gravedad }}",
+                    "rightValue": "ALTA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "57414791-95d6-480f-8c24-7e2c5809fe47"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4aeb9447-4015-4993-be9c-ee1bb3c2b8d1",
+                    "leftValue": "={{ $json.triage.nivel_gravedad }}",
+                    "rightValue": "MEDIA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f5d894ef-b515-4cba-8246-40595ec6e1f5",
+                    "leftValue": "={{ $json.triage.nivel_gravedad }}",
+                    "rightValue": "BAJA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -864,
+        -80
+      ],
+      "id": "d1e071c2-d4ea-4c2d-9616-228f8c8095c6",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "operation": "search",
+        "term": "={{ $json.triage.id_paciente }}",
+        "additionalFields": {
+          "fields": [
+            "custom_fields",
+            "name"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 2,
+      "position": [
+        -1744,
+        -48
+      ],
+      "id": "975651fd-a205-45f5-b7a1-152caabf406e",
+      "name": "Search persons",
+      "alwaysOutputData": true,
+      "credentials": {
+        "pipedriveApi": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "84b22666-2a05-44a4-98c6-67ee6aafb64b",
+              "leftValue": "={{ $json.id.toString() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1536,
+        -48
+      ],
+      "id": "7c9837c0-7c9d-43b2-a1c6-46c3066f81fb",
+      "name": "IF - Existe en CRM"
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "operation": "update",
+        "personId": "={{ $json.id }}",
+        "updateFields": {
+          "customFields": {
+            "property": [
+              {
+                "name": "id_paciente",
+                "value": "={{ $('Code in JavaScript').item.json.triage.id_paciente }}"
+              },
+              {
+                "name": "sintoma_principal",
+                "value": "={{ $('Code in JavaScript').item.json.triage.sintoma_principal }}"
+              },
+              {
+                "name": "fecha_evaluacion",
+                "value": "={{ $('Code in JavaScript').item.json.triage.fecha_evaluacion.slice(0, 10) }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 2,
+      "position": [
+        -1296,
+        -144
+      ],
+      "id": "9d483d81-583c-4c01-8a9d-56cceb4e6ca8",
+      "name": "Update person",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "name": "={{ $('Code in JavaScript').item.json.triage.nombre }} {{ $('Code in JavaScript').item.json.triage.apellido }}",
+        "additionalFields": {
+          "customFields": {
+            "property": [
+              {
+                "name": "id_paciente",
+                "value": "={{ $('Code in JavaScript').item.json.triage.id_paciente }}"
+              },
+              {
+                "name": "sintoma_principal",
+                "value": "={{ $('Code in JavaScript').item.json.triage.sintoma_principal }}"
+              },
+              {
+                "name": "fecha_evaluacion",
+                "value": "={{ $('Code in JavaScript').item.json.triage.fecha_evaluacion.slice(0, 10) }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 2,
+      "position": [
+        -1296,
+        144
+      ],
+      "id": "88fc4023-1f04-4c5b-a51b-9983f70621f2",
+      "name": "Create person",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "restaurar-triage-01",
+              "name": "triage",
+              "value": "={{ $('Code in JavaScript').item.json.triage }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1056,
+        -64
+      ],
+      "id": "feeb09db-ef83-4431-a9fb-60d4ee5353ce",
+      "name": "Restaurar datos triage"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "es7KAQbRJgXAohgs",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/es7KAQbRJgXAohgs",
+          "cachedResultName": "Worker 1 - Nivel_Grav_Alta"
+        },
+        "workflowInputs": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -608,
+        -336
+      ],
+      "id": "14a54859-07fd-4dd3-b706-e0bca650f2c6",
+      "name": "CALL Worker 1 - Nivel_Grav_Alta"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xwGYIUBn0KWDjYBJ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xwGYIUBn0KWDjYBJ",
+          "cachedResultName": "Worker 2 - Nivel_Grav_Media"
+        },
+        "workflowInputs": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -608,
+        -64
+      ],
+      "id": "23989e5c-4d47-47c8-9ad2-74ac02b89e8d",
+      "name": "CALL - Worker 2 Nivel_Grav_Media"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "zoH7oG1hC6IezAhA",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/zoH7oG1hC6IezAhA",
+          "cachedResultName": "Worker 3 - Nivel_Grav_Baja"
+        },
+        "workflowInputs": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -608,
+        192
+      ],
+      "id": "675c6370-6e28-48e6-9343-9efc46791060",
+      "name": "CALL Worker 3 - Nivel_Grav_Baja"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -2464,
+        -48
+      ],
+      "id": "1d8f000d-4385-4f1f-b36a-6f887cbec6ff",
+      "name": "When chat message received",
+      "webhookId": "ad92a1b4-14cd-4030-a142-173a1ce08f92"
+    },
+    {
+      "parameters": {
+        "content": "## Triage Médico evaluador y extractor de info de consultas de pacientes",
+        "height": 336,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2272,
+        -224
+      ],
+      "id": "6ea82a8e-4233-4db7-b33d-c775e96477ab",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Si existe el contacto en el CRM Update",
+        "height": 272,
+        "width": 224,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        -256
+      ],
+      "id": "770730fc-4ecc-4106-b6a7-889dca233a94",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Si no existe en el CRM contacto Create ",
+        "height": 272,
+        "color": "#021B36"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        32
+      ],
+      "id": "c4484206-3b97-46b8-a0ae-d14e822eaa11",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Derivador Switch para Evaluación y Atención según el Niv Gravedad",
+        "height": 384,
+        "width": 208,
+        "color": "#841010"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        -256
+      ],
+      "id": "6e94ba7f-599f-47d5-88e6-95bacb532e16",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Search persons",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "CALL Worker 1 - Nivel_Grav_Alta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CALL - Worker 2 Nivel_Grav_Media",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CALL Worker 3 - Nivel_Grav_Baja",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search persons": {
+      "main": [
+        [
+          {
+            "node": "IF - Existe en CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Existe en CRM": {
+      "main": [
+        [
+          {
+            "node": "Update person",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create person",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update person": {
+      "main": [
+        [
+          {
+            "node": "Restaurar datos triage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create person": {
+      "main": [
+        [
+          {
+            "node": "Restaurar datos triage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restaurar datos triage": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "db9637af-1a0f-4ba1-8faa-21384e0b0dec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1a0664170c7761d9a55d4e44775146c5240c5c6d974733b52e2fa6a8906839d7"
+  },
+  "id": "fPfCmPZBoVaZXUBU",
+  "tags": []
+}

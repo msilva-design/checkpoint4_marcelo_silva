@@ -1,0 +1,467 @@
+{
+  "name": "Worker 2 - Nivel_Grav_Media",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        192
+      ],
+      "id": "beae8ba5-ebaf-4c76-808b-ff8781c74692",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.decision }}",
+                    "rightValue": "aprobado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "38e73ef5-19b7-4919-87d7-b8013d65d66c"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.decision }}",
+                    "rightValue": "escalar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f397a984-8e8a-4b0a-bf58-bf6f7901be5e"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        480,
+        176
+      ],
+      "id": "fb76e22a-8e2f-4b50-bf70-a578bb4de6af",
+      "name": "Switch decision MEDIA"
+    },
+    {
+      "parameters": {
+        "sendTo": "msil1972@proton.me",
+        "subject": "🚨 DERIVACIÓN URGENTE — {{ $('When Executed by Another Workflow').item.json.triage.sintoma_principal }}",
+        "message": "=<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto\"><div style=\"background:#c0392b;padding:16px;border-radius:8px 8px 0 0\"><h2 style=\"color:white;margin:0\">🚨 SOLICITUD DE DERIVACIÓN URGENTE</h2></div><div style=\"background:#f9f9f9;padding:24px;border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px\"><p><strong>Síntoma principal:</strong><br>{{ $json.triage.sintoma_principal }}</p><p><strong>Nivel de gravedad:</strong> <span style=\"color:#c0392b;font-weight:bold\">{{ $json.triage.nivel_gravedad }}</span></p><p>Por favor tomá una decisión:</p><a href=\"{{ $execution.resumeUrl + '&decision=aprobado' }}\" style=\"display:inline-block;background:#27ae60;color:white;padding:14px 20px;text-decoration:none;border-radius:6px;font-weight:bold;margin-right:8px;margin-bottom:8px\">✅ APROBAR DERIVACIÓN</a><a href=\"{{ $execution.resumeUrl + '&decision=escalar' }}\" style=\"display:inline-block;background:#e67e22;color:white;padding:14px 20px;text-decoration:none;border-radius:6px;font-weight:bold;margin-right:8px;margin-bottom:8px\">⚠️ ESCALAR A ALTA</a><a href=\"{{ $execution.resumeUrl + '&decision=rechazado' }}\" style=\"display:inline-block;background:#e74c3c;color:white;padding:14px 20px;text-decoration:none;border-radius:6px;font-weight:bold;margin-bottom:8px\">❌ RECHAZAR DERIVACIÓN</a><p style=\"margin:24px 0 0;color:#888;font-size:12px\">⚠️ Este enlace es de un solo uso.</p></div></div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        192
+      ],
+      "id": "47bc6df7-10a6-499d-8256-2727d2170f24",
+      "name": "Send a message",
+      "webhookId": "cda466f3-9152-4e9e-8bf6-bb0d337e861b",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "decision",
+              "value": "Aprobado ",
+              "type": "string",
+              "id": "74ecaca1-f302-4c14-b60f-b6bc3526ff0d"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        32
+      ],
+      "id": "b2e25c17-b77b-4fbf-90ee-20a26fc30082",
+      "name": "Set-Aprobado"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "decision",
+              "value": "Escalado a ALTA por revision humana",
+              "type": "string",
+              "id": "c7f8ba87-d814-448d-860e-d5916ec6fdf3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        192
+      ],
+      "id": "c4af4f23-a952-4dc1-9c18-d6e96e60777d",
+      "name": "Set-Escalado a ALTA"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "decision",
+              "value": "Sin respuesta o rechazado - Nivel BAJA",
+              "type": "string",
+              "id": "77c7e41a-9947-4701-b227-c608d3f2d067"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        352
+      ],
+      "id": "76a650d2-30fa-49ae-9617-92d8bfb567d2",
+      "name": "Set-Rechazado o Sin Respuesta"
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "responseMode": "lastNode",
+        "limitWaitTime": true,
+        "resumeAmount": 15,
+        "resumeUnit": "minutes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        192
+      ],
+      "id": "46ab5373-ffbb-41a4-83e8-61ca5238a4ec",
+      "name": "Esperar decision (15 min)",
+      "webhookId": "wait-webhook-worker2"
+    },
+    {
+      "parameters": {
+        "content": "##Derivación a Responsable de Area medica para evaluación",
+        "height": 240,
+        "width": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        32,
+        112
+      ],
+      "id": "5e04eb94-b747-4322-8cc5-7038ad814f7a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "##Switch de derivación según Evaluación Responsable de Area",
+        "height": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        432,
+        112
+      ],
+      "id": "05540035-a0ed-4ff2-a2bb-24160a6cd605",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1htHCJdH9NfsEdglfQFRGv1PdeFkTsYTWa0Vk0GCo2Cs",
+          "mode": "list",
+          "cachedResultName": "Regitro de Consultas Nivel_Grav",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1htHCJdH9NfsEdglfQFRGv1PdeFkTsYTWa0Vk0GCo2Cs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1htHCJdH9NfsEdglfQFRGv1PdeFkTsYTWa0Vk0GCo2Cs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "fecha_evaluacion": "={{ $('When Executed by Another Workflow').item.json.triage.fecha_evaluacion }}",
+            "id_paciente": "={{ $('When Executed by Another Workflow').item.json.triage.id_paciente }}",
+            "nombre ": "={{ $('When Executed by Another Workflow').item.json.triage.nombre }}",
+            "apellido": "={{ $('When Executed by Another Workflow').item.json.triage.apellido }}",
+            "sintoma_principal": "={{ $('When Executed by Another Workflow').item.json.triage.sintoma_principal }}",
+            "nivel_gravedad": "={{ $('When Executed by Another Workflow').item.json.triage.nivel_gravedad }}",
+            "requiere_medico": "={{ $('When Executed by Another Workflow').item.json.triage.requiere_medico }}",
+            "decision": "={{ $json.decision }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "fecha_evaluacion",
+              "displayName": "fecha_evaluacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id_paciente",
+              "displayName": "id_paciente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nombre ",
+              "displayName": "nombre ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "apellido",
+              "displayName": "apellido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sintoma_principal",
+              "displayName": "sintoma_principal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nivel_gravedad",
+              "displayName": "nivel_gravedad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "requiere_medico",
+              "displayName": "requiere_medico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "decision",
+              "displayName": "decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1008,
+        192
+      ],
+      "id": "bf06e2a3-40e0-4e16-8fb2-ba95b367bead",
+      "name": "Registrar caso MEDIA Logs Auditoría",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch decision MEDIA": {
+      "main": [
+        [
+          {
+            "node": "Set-Aprobado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set-Escalado a ALTA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set-Rechazado o Sin Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Esperar decision (15 min)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set-Aprobado": {
+      "main": [
+        [
+          {
+            "node": "Registrar caso MEDIA Logs Auditoría",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set-Escalado a ALTA": {
+      "main": [
+        [
+          {
+            "node": "Registrar caso MEDIA Logs Auditoría",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set-Rechazado o Sin Respuesta": {
+      "main": [
+        [
+          {
+            "node": "Registrar caso MEDIA Logs Auditoría",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar decision (15 min)": {
+      "main": [
+        [
+          {
+            "node": "Switch decision MEDIA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar caso MEDIA Logs Auditoría": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3729a91c-963c-48ee-b929-5572801a8b39",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1a0664170c7761d9a55d4e44775146c5240c5c6d974733b52e2fa6a8906839d7"
+  },
+  "id": "xwGYIUBn0KWDjYBJ",
+  "tags": []
+}

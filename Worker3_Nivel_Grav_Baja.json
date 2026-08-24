@@ -1,0 +1,165 @@
+{
+  "name": "Worker 3 - Nivel_Grav_Baja",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When Executed by Another Workflow').item.json.triage.mensaje_original }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Sos un asistente médico que redacta respuestas simples, claras y tranquilizadoras para pacientes con síntomas leves (nivel de gravedad BAJA). El paciente consultó por: {{ $('When Executed by Another Workflow').item.json.triage.sintoma_principal }}. Redactá una respuesta breve explicando que, según la evaluación inicial, sus síntomas no representan una urgencia, sugiriendo medidas básicas de autocuidado si corresponde (reposo, hidratación, etc.), y aclarando que si los síntomas empeoran o no mejoran en unos días debe consultar a un médico. No des diagnósticos ni indiques medicación específica. Usá un tono cálido y cercano."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "5f48260f-ec59-41f4-b629-d31bb906b650",
+      "name": "Basic LLM Chain1",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        176
+      ],
+      "id": "9d239b00-3033-457a-be9e-dee2a538121d",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -512,
+        0
+      ],
+      "id": "9a41b2dd-db53-4ae2-8ae3-ef5e029cf1fe",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "content": "## Asistente Médico para consultas de pacientes con síntomas leves",
+        "height": 288,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -144
+      ],
+      "id": "8667d524-8e44-4636-9d23-6f83217ec2a7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=Caso BAJA — {{ $('When Executed by Another Workflow').item.json.triage.sintoma_principal }}",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        0
+      ],
+      "id": "e5ebc3d4-997e-4d13-b767-88571421102f",
+      "name": "Create Draft - Revisión antes de enviar",
+      "webhookId": "14c5baf4-7bb6-467e-842f-6129dd6c67bd",
+      "retryOnFail": false,
+      "maxTries": 2,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Nodo Human and the Loop",
+        "height": 256,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -80
+      ],
+      "id": "7352f59a-787a-4311-a34c-2c1cfd5e1a28",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Create Draft - Revisión antes de enviar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5ffff8ee-1665-4c0f-8f8a-766eb464837a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1a0664170c7761d9a55d4e44775146c5240c5c6d974733b52e2fa6a8906839d7"
+  },
+  "id": "zoH7oG1hC6IezAhA",
+  "tags": []
+}

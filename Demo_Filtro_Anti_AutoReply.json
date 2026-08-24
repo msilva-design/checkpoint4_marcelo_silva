@@ -1,0 +1,119 @@
+{
+  "name": "DEMO - FILTRO ANTI AUTO-REPLY",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -336,
+        0
+      ],
+      "id": "9383f1fa-9eb9-48a2-a22e-ccb923fabbb7",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REEMPLAZAR_CON_TU_CREDENCIAL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8a926568-b833-4e3a-9213-a3eb589f4a19",
+              "leftValue": "={{ $json.Subject }}",
+              "rightValue": "auto-reply",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "f36d9c2f-2e6d-4b29-b1f7-6d80ef26d2f3",
+              "leftValue": "={{ $json.Subject }}",
+              "rightValue": "out of office",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "213edda8-17ca-4470-9e5f-bb5a5c825b82",
+              "leftValue": "={{ $json.Subject }}",
+              "rightValue": "undeliverable",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "432cd583-a645-432c-9acb-d709cdf2087a",
+              "leftValue": "={{ $json.From }}",
+              "rightValue": "no-reply@",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "0220522e-0ae3-451f-9b71-e2e3435e455f",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e3ad1a15-80e2-4cc7-bc54-e0f4c80ca730",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1a0664170c7761d9a55d4e44775146c5240c5c6d974733b52e2fa6a8906839d7"
+  },
+  "id": "EKYNZ8qwMBPCWipg",
+  "tags": []
+}
